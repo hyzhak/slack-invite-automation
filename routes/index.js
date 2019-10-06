@@ -27,7 +27,7 @@ function sendMessageToChannel(text) {
 router.post('/invite', function(req, res) {
   if (req.body.email && (!config.inviteToken || (!!config.inviteToken && req.body.token === config.inviteToken))) {
     function doInvite() {
-      sendMessageToChannel(`${req.body.email}: got request`);
+      sendMessageToChannel(`${req.body.email}: requested invitation`);
       request.post({
           url: 'https://'+ config.slackUrl + '/api/users.admin.invite',
           form: {
@@ -41,7 +41,7 @@ router.post('/invite', function(req, res) {
           //       or
           //   {"ok":false,"error":"already_invited"}
           if (err) {
-            sendMessageToChannel(`${req.body.email}: received error ${err}`);
+            sendMessageToChannel(`${req.body.email}: got request error \`${err}\``);
             return res.send('Error:' + err);
           }
           body = JSON.parse(body);
@@ -53,7 +53,7 @@ router.post('/invite', function(req, res) {
             });
           } else {
             let error = body.error;
-            sendMessageToChannel(`${req.body.email}: got error ${error}`);
+            sendMessageToChannel(`${req.body.email}: got response error \`${error}\``);
             if (error === 'already_invited' || error === 'already_in_team') {
               res.render('result', {
                 community: config.community,
