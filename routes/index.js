@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const request = require('request');
+const requestOnPromises = require('request-promise-native');
 
 const config = require('../config');
 const { badge } = require('../lib/badge');
@@ -14,9 +15,19 @@ router.get('/', function(req, res) {
                         recaptchaSiteKey: config.recaptchaSiteKey });
 });
 
+function sendMessageToChannel(text) {
+  return requestOnPromises.post({
+    url: `https://hooks.slack.com/services/${config.slackIncomingWebhookToken}`,
+    json: {
+      text
+    }
+  });
+}
+
 router.post('/invite', function(req, res) {
   if (req.body.email && (!config.inviteToken || (!!config.inviteToken && req.body.token === config.inviteToken))) {
     function doInvite() {
+      sendMessageToChannel(`${req.body.email}: got request`);
       request.post({
           url: 'https://'+ config.slackUrl + '/api/users.admin.invite',
           form: {
@@ -29,15 +40,20 @@ router.post('/invite', function(req, res) {
           //   {"ok":true}
           //       or
           //   {"ok":false,"error":"already_invited"}
-          if (err) { return res.send('Error:' + err); }
+          if (err) {
+            sendMessageToChannel(`${req.body.email}: received error ${err}`);
+            return res.send('Error:' + err);
+          }
           body = JSON.parse(body);
           if (body.ok) {
+            sendMessageToChannel(`${req.body.email}: invited`);
             res.render('result', {
               community: config.community,
               message: 'Success! Check &ldquo;'+ req.body.email +'&rdquo; for an invite from Slack.'
             });
           } else {
             let error = body.error;
+            sendMessageToChannel(`${req.body.email}: got error ${error}`);
             if (error === 'already_invited' || error === 'already_in_team') {
               res.render('result', {
                 community: config.community,
