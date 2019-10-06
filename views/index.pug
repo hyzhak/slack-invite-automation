@@ -41,11 +41,11 @@ html
           evt.preventDefault();
         }
       });
-    if !!googleAnalytics
-      script(async=true, src='https://www.googletagmanager.com/gtag/js?id='+googleAnalytics)
+    if !!config.googleAnalytics
+      script(async=true, src='https://www.googletagmanager.com/gtag/js?id='+config.googleAnalytics)
       script.
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', googleAnalytics);
+        gtag('config', config.googleAnalytics);
 
