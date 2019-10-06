@@ -13,3 +13,10 @@ html
           h1= message
           h2= error.status
           pre #{error.stack}
+    if !!config.googleAnalytics
+      script(async=true, src='https://www.googletagmanager.com/gtag/js?id='+config.googleAnalytics)
+      script.
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', config.googleAnalytics);
